@@ -1,0 +1,3 @@
+USERIDALIAS c##ggadmin
+DEFSFILE dirdef/demo.def
+TABLE ORCLPDB1.ogguser.*;

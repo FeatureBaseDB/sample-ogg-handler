@@ -1,8 +1,9 @@
 version: "2"
+
 services:
 
   extract:
-    image: pilosa/gg-oracle-standard:18.1
+    image: oracle/goldengate-standard:18.1.0.0.0-patched
     environment:
       ORACLE_PWD: "w"
       ORACLE_SID: "ORCLCDB"
@@ -11,7 +12,7 @@ services:
       - ./v_common:/common
       - ./v_ext:/prv
 
-   replicat:
+  replicat:
     image: pilosa/gg-jadapter:12.3
     volumes:
       - ./v_dirprm:/u01/app/ogg/dirprm
@@ -20,8 +21,3 @@ services:
 
   pilosa:
       image: pilosa/pilosa:master
-
-  sidecar:
-      image: pilosa/gg-sidecar:1.2
-      init: true
-      tty: true
