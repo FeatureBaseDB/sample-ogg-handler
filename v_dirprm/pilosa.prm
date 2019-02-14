@@ -1,0 +1,5 @@
+REPLICAT pilosa
+SOURCEDEFS /prv/dpilosa.def
+TARGETDB LIBFILE libggjava.so
+REPORTCOUNT EVERY 1 MINUTES, RATE
+MAP ORCLPDB1.ogguser.*, TARGET ogguser.*;

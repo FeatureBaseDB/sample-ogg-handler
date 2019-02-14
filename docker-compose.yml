@@ -1,0 +1,27 @@
+version: "2"
+services:
+
+  extract:
+    image: pilosa/gg-oracle-standard:18.1
+    environment:
+      ORACLE_PWD: "w"
+      ORACLE_SID: "ORCLCDB"
+    volumes:
+      - ./v_dirprm:/u01/app/ogg/dirprm
+      - ./v_common:/common
+      - ./v_ext:/prv
+
+   replicat:
+    image: pilosa/gg-jadapter:12.3
+    volumes:
+      - ./v_dirprm:/u01/app/ogg/dirprm
+      - ./v_common:/common
+      - ./v_rep:/prv
+
+  pilosa:
+      image: pilosa/pilosa:master
+
+  sidecar:
+      image: pilosa/gg-sidecar:1.2
+      init: true
+      tty: true
