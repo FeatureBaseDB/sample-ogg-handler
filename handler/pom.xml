@@ -7,12 +7,10 @@
     <groupId>sample</groupId>
     <artifactId>PilosaHandler</artifactId>
     <version>0.1.0</version>
-
-
     <packaging>jar</packaging>
 
     <properties>
-        <goldengate.version>12.2.0.1.2.001</goldengate.version>
+        <goldengate.version>12.3.2.1.1.005</goldengate.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <timestamp>${maven.build.timestamp}</timestamp>

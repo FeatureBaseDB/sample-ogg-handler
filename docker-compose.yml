@@ -3,7 +3,7 @@ version: "2"
 services:
 
   extract:
-    image: oracle/goldengate-standard:18.1.0.0.0-patched
+    image: oracle/db-12.2-goldengate-standard:18.1.0.0.0-patched
     environment:
       ORACLE_PWD: "w"
       ORACLE_SID: "ORCLCDB"
@@ -13,7 +13,7 @@ services:
       - ./v_ext:/prv
 
   replicat:
-    image: pilosa/gg-jadapter:12.3
+    image: oracle/goldengate-standard-bigdata:12.3.0.1.2
     volumes:
       - ./v_dirprm:/u01/app/ogg/dirprm
       - ./v_common:/common

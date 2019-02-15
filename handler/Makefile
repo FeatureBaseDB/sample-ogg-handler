@@ -2,7 +2,7 @@
 
 INSTALL_FILE = mvn install:install-file
 GGJAVA_DIR = local/ggjava
-GOLDENGATE_VERSION = 12.2.0.1.2.001
+GOLDENGATE_VERSION = 12.3.2.1.1.005
 
 all: build
 
