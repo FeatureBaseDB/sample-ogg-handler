@@ -1,0 +1,11 @@
+--- dockerBuild.sh	2019-02-19 01:06:50.833136997 +0300
++++ dockerBuild-mac.sh	2019-02-19 01:07:24.869217049 +0300
+@@ -99,7 +99,7 @@
+     }
+ }
+ find    ggstar -type f \( -name '*.so*' -o -not -name '*.*' \) -exec chmod +x {} \;
+-tar Ccf ggstar ${OGG_TARFILE} --owner=54321 --group=54321 .
++gtar Ccf ggstar ${OGG_TARFILE} --owner=54321 --group=54321 .
+ rm -fr  ggstar
+ 
+ [[ ! -z "${BASE_IMAGE}"  ]] && BASE_IMAGE_ARG="--build-arg BASE_IMAGE=${BASE_IMAGE}"
