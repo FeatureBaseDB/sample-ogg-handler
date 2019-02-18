@@ -31,7 +31,9 @@ import oracle.goldengate.datasource.meta.DsMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PilosaHandler extends AbstractHandler {
 
@@ -120,32 +122,62 @@ public class PilosaHandler extends AbstractHandler {
         employeesBatch.clear();
     }
 
+
     private void insertOp(DsOperation op) {
-        logger.info("INSERT " + op.getTableName());
-        logger.info(" " + op.getRecord().toString());
+        logger.info("INSERT " + op.getTableName() + " " + op.getRecord().toString());
         if (op.getTableName().getShortName().equals("EMPLOYEES")) {
             DsRecord record = op.getRecord();
-            long employee = Long.valueOf(record.getAfterValue(0));
-            String job = record.getAfterValue(6);
-            long salary = Float.valueOf(record.getAfterValue(7)).longValue();
+            long employeeID = Long.valueOf(record.getAfterValue(0));
 
-            employeesBatch.add(employeesJob.set(job, employee));
-            employeesBatch.add(employeesSalary.set(salary, employee));
-            employeesBatch.add(employeesOk.set(true, employee));
+            String job = record.getAfterValue(6);
+            employeesBatch.add(employeesJob.set(job, employeeID));
+
+            long salary = Float.valueOf(record.getAfterValue(7)).longValue();
+            employeesBatch.add(employeesSalary.set(salary, employeeID));
+
+            Map<String, Object> columnAttrs = new HashMap<>();
+            String email = record.getAfterValue(3);
+            columnAttrs.put("email", email);
+            employeesBatch.add(employeesIndex.setColumnAttrs(employeeID, columnAttrs));
+
+            // Mark this employee exists.
+            // This is not required, but enables deleting an employee.
+            employeesBatch.add(employeesOk.set(true, employeeID));
         }
     }
 
     private void updateOp(DsOperation op) {
-        logger.info("UPDATE " + op.getTableName());
+        logger.info("UPDATE " + op.getTableName() + " " + op.getRecord().toString());
+        if (op.getTableName().getShortName().equals("EMPLOYEES")) {
+            DsRecord record = op.getRecord();
+            long employeeID = Long.valueOf(record.getAfterValue(0));
+
+            String job = record.getAfterValue(6);
+            if (!job.equals("")) {
+                employeesBatch.add(employeesJob.set(job, employeeID));
+            }
+
+            String salaryStr = record.getAfterValue(7);
+            if (!salaryStr.equals("")) {
+                employeesBatch.add(employeesSalary.set(Float.valueOf(salaryStr).longValue(), employeeID));
+            }
+
+            String email = record.getAfterValue(3);
+            if (!email.equals("")) {
+                Map<String, Object> columnAttrs = new HashMap<>();
+                columnAttrs.put("email", email);
+                employeesBatch.add(employeesIndex.setColumnAttrs(employeeID, columnAttrs));
+            }
+        }
     }
 
     private void deleteOp(DsOperation op) {
-        logger.info("DELETE " + op.getTableName());
-        logger.info(" " + op.getRecord().toString());
+        logger.info("DELETE " + op.getTableName() + " " + op.getRecord().toString());
         if (op.getTableName().getShortName().equals("EMPLOYEES")) {
             DsRecord record = op.getRecord();
-            long employee = Long.valueOf(record.getAfterValue(0));
-            employeesBatch.add(employeesIndex.field("ok").set(false, employee));
+            long employeeID = Long.valueOf(record.getAfterValue(0));
+            // Mark the employee as don't exist.
+            employeesBatch.add(employeesIndex.field("ok").set(false, employeeID));
         }
     }
 
