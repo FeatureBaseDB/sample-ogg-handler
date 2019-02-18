@@ -25,7 +25,7 @@ THE SOFTWARE.
 package sample;
 
 import com.pilosa.client.PilosaClient;
-import com.pilosa.client.orm.Schema;
+import com.pilosa.client.orm.*;
 import oracle.goldengate.datasource.*;
 import oracle.goldengate.datasource.meta.DsMetaData;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class PilosaHandler extends AbstractHandler {
     @Override
     public GGDataSource.Status operationAdded(DsEvent e, DsTransaction tx, DsOperation op) {
         super.operationAdded(e, tx, op);
-        logger.info("event added: {}", e.toString());
+        logger.debug("event added: {}", e.toString());
         final List<DsOperation> operations = tx.getOperations();
         for (DsOperation oper : operations) {
             DsOperation.OpType opType = oper.getOperationType();
@@ -59,6 +59,10 @@ public class PilosaHandler extends AbstractHandler {
             } else if (opType.isDelete()) {
                 deleteOp(oper);
             }
+        }
+
+        if (employeesBatch.size() > 0) {
+            pilosaClient.query(employeesBatch);
         }
 
         resetBatch();
@@ -96,15 +100,39 @@ public class PilosaHandler extends AbstractHandler {
     private void createSchema() {
         schema = this.pilosaClient.readSchema();
         // Create the indexes and fields
+        employeesIndex = schema.index("employees");
+        employeesJob = employeesIndex.field("job", FieldOptions.builder()
+            .fieldSet()
+            .setKeys(true)
+            .build());
+        employeesSalary = employeesIndex.field("salary", FieldOptions.builder()
+            .fieldInt(0, 1000000)
+            .build());
+        employeesOk = employeesIndex.field("ok", FieldOptions.builder()
+            .fieldBool()
+            .build());
         pilosaClient.syncSchema(this.schema);
-        resetBatch();
+
+        employeesBatch = employeesIndex.batchQuery();
     }
 
     private void resetBatch() {
+        employeesBatch.clear();
     }
 
     private void insertOp(DsOperation op) {
         logger.info("INSERT " + op.getTableName());
+        logger.info(" " + op.getRecord().toString());
+        if (op.getTableName().getShortName().equals("EMPLOYEES")) {
+            DsRecord record = op.getRecord();
+            long employee = Long.valueOf(record.getAfterValue(0));
+            String job = record.getAfterValue(6);
+            long salary = Float.valueOf(record.getAfterValue(7)).longValue();
+
+            employeesBatch.add(employeesJob.set(job, employee));
+            employeesBatch.add(employeesSalary.set(salary, employee));
+            employeesBatch.add(employeesOk.set(true, employee));
+        }
     }
 
     private void updateOp(DsOperation op) {
@@ -113,10 +141,21 @@ public class PilosaHandler extends AbstractHandler {
 
     private void deleteOp(DsOperation op) {
         logger.info("DELETE " + op.getTableName());
+        logger.info(" " + op.getRecord().toString());
+        if (op.getTableName().getShortName().equals("EMPLOYEES")) {
+            DsRecord record = op.getRecord();
+            long employee = Long.valueOf(record.getAfterValue(0));
+            employeesBatch.add(employeesIndex.field("ok").set(false, employee));
+        }
     }
 
     private final static Logger logger = LoggerFactory.getLogger(PilosaHandler.class);
     private PilosaClient pilosaClient;
     private Schema schema;
+    private Index employeesIndex;
+    private Field employeesJob;
+    private Field employeesSalary;
+    private Field employeesOk;
+    private PqlBatchQuery employeesBatch;
     private String address;
 }
