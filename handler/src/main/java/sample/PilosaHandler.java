@@ -175,7 +175,7 @@ public class PilosaHandler extends AbstractHandler {
         logger.info("DELETE " + op.getTableName() + " " + op.getRecord().toString());
         if (op.getTableName().getShortName().equals("EMPLOYEES")) {
             DsRecord record = op.getRecord();
-            long employeeID = Long.valueOf(record.getAfterValue(0));
+            long employeeID = Long.valueOf(record.getBeforeValue(0));
             // Mark the employee as don't exist.
             employeesBatch.add(employeesIndex.field("ok").set(false, employeeID));
         }
