@@ -3,6 +3,7 @@ version: "2"
 services:
 
   extract:
+    container_name: sampleogghandler_extract_1
     image: oracle/db-12.2-goldengate-standard:18.1.0.0.0-patched
     environment:
       ORACLE_PWD: "w"
@@ -13,6 +14,7 @@ services:
       - ./v_ext:/prv
 
   replicat:
+    container_name: sampleogghandler_replicat_1
     image: oracle/goldengate-standard-bigdata:12.3.0.1.2
     volumes:
       - ./v_dirprm:/u01/app/ogg/dirprm
@@ -20,4 +22,5 @@ services:
       - ./v_rep:/prv
 
   pilosa:
-      image: pilosa/pilosa:master
+    container_name: sampleogghandler_pilosa_1
+    image: pilosa/pilosa:master
